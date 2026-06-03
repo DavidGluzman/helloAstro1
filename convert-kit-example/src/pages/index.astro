@@ -1,17 +1,888 @@
----
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>דויד גלוזמן | שיווק דיגיטלי שעובד</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ══════════════════════════════════════════
+       VARIABLES & RESET
+    ══════════════════════════════════════════ */
+    :root {
+      --bg:        #020a16;
+      --cyan:      #00efd4;
+      --cyan-dim:  #00bfaa;
+      --violet:    #6c2ef5;
+      --pink:      #ff2d6d;
+      --white:     #e6f4ff;
+      --text:      #7fb3cc;
+      --text-dim:  #2d5068;
+      --glass-bg:  rgba(3,12,28,.62);
+      --glass-bd:  rgba(0,239,212,.12);
+      --blur:      blur(22px);
+      --r:         15px;
+      --r-lg:      22px;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Assistant', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      direction: rtl;
+      text-align: right;
+      line-height: 1.7;
+      font-size: 17px;
+      overflow-x: hidden;
+    }
 
----
+    /* CSS grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,239,212,.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,239,212,.022) 1px, transparent 1px);
+      background-size: 72px 72px;
+      pointer-events: none; z-index: 0;
+    }
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Yuval is the man</h1>
-	</body>
+    /* Cursor glow */
+    #glow {
+      position: fixed;
+      width: 700px; height: 700px; border-radius: 50%;
+      background: radial-gradient(circle, rgba(0,239,212,.045) 0%, transparent 65%);
+      pointer-events: none; z-index: 0;
+      transform: translate(-50%,-50%);
+      transition: left .08s linear, top .08s linear;
+    }
+
+    /* Three.js canvas */
+    #c {
+      position: fixed; inset: 0;
+      width: 100%; height: 100%;
+      z-index: 1; pointer-events: none;
+    }
+
+    /* All content sits above canvas */
+    nav, section, footer { position: relative; z-index: 2; }
+
+    /* ══════════════════════════════════════════
+       GLASS CARD
+    ══════════════════════════════════════════ */
+    .glass {
+      background: var(--glass-bg);
+      backdrop-filter: var(--blur);
+      -webkit-backdrop-filter: var(--blur);
+      border: 1px solid var(--glass-bd);
+      border-radius: var(--r);
+      position: relative; overflow: hidden;
+      transition: border-color .25s, box-shadow .25s;
+    }
+    .glass::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(140deg, rgba(255,255,255,.04) 0%, transparent 55%);
+      border-radius: inherit; pointer-events: none;
+    }
+    .glass:hover {
+      border-color: rgba(0,239,212,.3);
+      box-shadow: 0 0 32px rgba(0,239,212,.07), 0 20px 50px rgba(0,0,0,.5);
+    }
+
+    /* ══════════════════════════════════════════
+       NAVIGATION
+    ══════════════════════════════════════════ */
+    nav {
+      position: fixed; top: 0; right: 0; left: 0;
+      z-index: 300; height: 66px; padding: 0 30px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(2,8,20,.84);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid rgba(0,239,212,.07);
+    }
+    .nav-logo {
+      font-size: 1.1rem; font-weight: 800; color: var(--white);
+      letter-spacing: -.5px; text-decoration: none;
+    }
+    .nav-logo em { font-style: normal; color: var(--cyan); }
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: var(--text); text-decoration: none;
+      font-size: .9rem; font-weight: 500; transition: color .2s;
+    }
+    .nav-links a:hover { color: var(--cyan); }
+    .btn-nav {
+      background: linear-gradient(135deg, var(--cyan), #00c8f0);
+      color: #020a16; border: none; border-radius: 9px;
+      padding: 9px 22px;
+      font-family: 'Assistant', sans-serif;
+      font-size: .9rem; font-weight: 800;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 0 22px rgba(0,239,212,.2);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn-nav:hover { transform: translateY(-1px); box-shadow: 0 0 38px rgba(0,239,212,.38); }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .hamburger span { display: block; width: 23px; height: 2px; background: var(--white); border-radius: 2px; }
+
+    /* ══════════════════════════════════════════
+       HERO
+    ══════════════════════════════════════════ */
+    #hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 130px 30px 90px;
+      position: relative; overflow: hidden;
+    }
+
+    /* Tron grid floor */
+    .tron-floor {
+      position: absolute;
+      bottom: 0; left: -30%; right: -30%; height: 55%;
+      background-image:
+        linear-gradient(rgba(0,239,212,.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,239,212,.07) 1px, transparent 1px);
+      background-size: 55px 55px;
+      transform: perspective(450px) rotateX(62deg);
+      transform-origin: bottom center;
+      mask-image: linear-gradient(transparent 0%, rgba(0,0,0,.6) 50%, transparent 100%);
+      -webkit-mask-image: linear-gradient(transparent 0%, rgba(0,0,0,.6) 50%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .hero-inner {
+      position: relative; z-index: 1;
+      max-width: 900px; margin: 0 auto; text-align: center;
+    }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: rgba(0,239,212,.07);
+      border: 1px solid rgba(0,239,212,.22);
+      border-radius: 50px; padding: 8px 22px;
+      font-size: .78rem; font-weight: 700; letter-spacing: .5px;
+      color: var(--cyan); margin-bottom: 32px;
+    }
+    .badge-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 8px var(--cyan);
+      animation: blink 2.2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    h1 {
+      font-size: clamp(2.4rem, 6.5vw, 4.4rem);
+      font-weight: 800; color: var(--white);
+      line-height: 1.14; letter-spacing: -1.5px; margin-bottom: 26px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(125deg, var(--cyan) 0%, #7c9fff 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; position: relative;
+    }
+    /* Holographic scanline */
+    h1 em::after {
+      content: '';
+      position: absolute; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(0,239,212,.85), transparent);
+      box-shadow: 0 0 8px rgba(0,239,212,.8);
+      animation: scan 4s ease-in-out infinite;
+    }
+    @keyframes scan {
+      0%   { top:0%;   opacity:0 }
+      8%   { opacity:1 }
+      92%  { opacity:1 }
+      100% { top:100%; opacity:0 }
+    }
+
+    .hero-sub {
+      font-size: clamp(1.05rem, 2.5vw, 1.22rem);
+      color: var(--text); max-width: 600px;
+      margin: 0 auto 46px; line-height: 1.8;
+    }
+
+    .hero-btns { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #00c0f5);
+      color: #020a16; border: none; border-radius: var(--r);
+      padding: 15px 36px;
+      font-family: 'Assistant', sans-serif;
+      font-size: 1.05rem; font-weight: 800;
+      cursor: pointer; text-decoration: none;
+      display: inline-flex; align-items: center; gap: 10px;
+      box-shadow: 0 0 32px rgba(0,239,212,.2), 0 6px 24px rgba(0,0,0,.35);
+      transition: transform .25s, box-shadow .25s;
+    }
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 0 56px rgba(0,239,212,.4), 0 10px 32px rgba(0,0,0,.45);
+    }
+    .btn-ghost {
+      background: rgba(255,255,255,.04);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--white);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: var(--r); padding: 14px 30px;
+      font-family: 'Assistant', sans-serif;
+      font-size: 1rem; font-weight: 600;
+      cursor: pointer; text-decoration: none;
+      transition: border-color .25s, color .25s, background .25s;
+    }
+    .btn-ghost:hover { border-color: var(--cyan); color: var(--cyan); background: rgba(0,239,212,.06); }
+
+    .hero-stats {
+      margin-top: 64px;
+      display: inline-flex;
+      background: rgba(3,12,28,.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(0,239,212,.1);
+      border-radius: var(--r); overflow: hidden;
+      flex-wrap: wrap;
+    }
+    .stat { padding: 20px 36px; text-align: center; border-left: 1px solid rgba(0,239,212,.1); }
+    .stat:last-child { border-left: none; }
+    .stat-n { font-size: 1.75rem; font-weight: 800; color: var(--white); line-height: 1; }
+    .stat-n span { color: var(--cyan); }
+    .stat-l { font-size: .78rem; color: var(--text-dim); margin-top: 5px; }
+
+    /* ══════════════════════════════════════════
+       SECTION BASE
+    ══════════════════════════════════════════ */
+    section { padding: 100px 30px; }
+    .inner { max-width: 1080px; margin: 0 auto; }
+
+    .stag {
+      display: inline-flex; align-items: center; gap: 10px;
+      font-size: .72rem; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--cyan); margin-bottom: 18px;
+    }
+    .stag::before { content:''; width:22px; height:1.5px; background:var(--cyan); display:block; }
+
+    h2 {
+      font-size: clamp(1.8rem, 4vw, 2.75rem);
+      font-weight: 800; color: var(--white);
+      line-height: 1.2; margin-bottom: 16px; letter-spacing: -.5px;
+    }
+    .lead {
+      font-size: 1.08rem; color: var(--text);
+      max-width: 570px; margin-bottom: 50px; line-height: 1.75;
+    }
+
+    /* ══════════════════════════════════════════
+       FOR WHOM
+    ══════════════════════════════════════════ */
+    .fw-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+    }
+    .fw-card { padding: 26px 22px; border-radius: var(--r); transition: transform .25s; }
+    .fw-card:hover { transform: translateY(-5px); }
+    .fw-icon { font-size: 1.8rem; margin-bottom: 13px; display: block; }
+    .fw-card h3 { font-size: .98rem; font-weight: 700; color: var(--white); margin-bottom: 7px; }
+    .fw-card p { font-size: .88rem; color: var(--text); line-height: 1.6; }
+
+    /* ══════════════════════════════════════════
+       SERVICES
+    ══════════════════════════════════════════ */
+    .svc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 22px;
+    }
+    .svc-card { padding: 34px 28px; border-radius: var(--r-lg); transition: transform .3s; }
+    .svc-card:hover { transform: translateY(-6px); }
+    .svc-card::after {
+      content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      opacity: 0; transition: opacity .3s; border-radius: 0 0 var(--r-lg) var(--r-lg);
+    }
+    .svc-card:hover::after { opacity: 1; }
+    .svc-num { font-size:.68rem; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--cyan); margin-bottom:12px; display:block; }
+    .svc-ico { font-size: 1.9rem; margin-bottom: 15px; display: block; }
+    .svc-card h3 { font-size: 1.08rem; font-weight: 700; color: var(--white); margin-bottom: 10px; }
+    .svc-card p { font-size: .9rem; color: var(--text); line-height: 1.65; }
+
+    /* ══════════════════════════════════════════
+       WHY ME
+    ══════════════════════════════════════════ */
+    .whyme-layout {
+      display: grid; grid-template-columns: 1.05fr .95fr;
+      gap: 50px; align-items: start;
+    }
+    .why-list { list-style: none; display: flex; flex-direction: column; gap: 16px; margin-top: 28px; }
+    .why-item {
+      display: flex; gap: 16px; padding: 18px 20px; border-radius: var(--r);
+      transition: transform .2s;
+    }
+    .why-item:hover { transform: translateX(-4px); }
+    .check {
+      flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+      background: rgba(0,239,212,.09); border: 1px solid rgba(0,239,212,.28);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--cyan); font-size: .72rem; margin-top: 3px;
+      box-shadow: 0 0 10px rgba(0,239,212,.12);
+    }
+    .why-item strong { color: var(--white); font-size: .98rem; display: block; margin-bottom: 3px; }
+    .why-item span { color: var(--text); font-size: .88rem; }
+
+    .quote-panel { padding: 34px 28px; border-radius: var(--r-lg); }
+    .qt {
+      font-size: 1.05rem; color: var(--white); font-weight: 500;
+      line-height: 1.72; padding-right: 22px; position: relative; margin-bottom: 18px;
+    }
+    .qt::before {
+      content: ''; position: absolute; right: 0; top: 4px; bottom: 4px;
+      width: 3px; background: linear-gradient(180deg, var(--cyan), var(--violet)); border-radius: 2px;
+    }
+    .qa { font-size: .83rem; color: var(--text-dim); margin-bottom: 28px; }
+    .chips { display: flex; flex-wrap: wrap; gap: 9px; }
+    .chip {
+      background: rgba(0,239,212,.06); border: 1px solid rgba(0,239,212,.16);
+      border-radius: 50px; padding: 5px 15px;
+      font-size: .82rem; color: var(--cyan); font-weight: 600;
+    }
+
+    /* ══════════════════════════════════════════
+       PROCESS
+    ══════════════════════════════════════════ */
+    .process-wrap {
+      display: flex; flex-direction: column; gap: 14px;
+      max-width: 760px; position: relative;
+    }
+    .process-wrap::before {
+      content: ''; position: absolute; right: 23px; top: 23px; bottom: 23px; width: 1px;
+      background: linear-gradient(180deg, var(--cyan), var(--violet), transparent);
+      opacity: .25;
+    }
+    .p-step {
+      display: flex; gap: 24px; align-items: flex-start;
+      padding: 24px 26px; border-radius: var(--r); transition: transform .2s;
+    }
+    .p-step:hover { transform: translateX(-5px); }
+    .p-num {
+      flex-shrink: 0; width: 46px; height: 46px; border-radius: 50%;
+      background: rgba(0,239,212,.08); border: 1.5px solid rgba(0,239,212,.32);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .88rem; font-weight: 800; color: var(--cyan);
+      box-shadow: 0 0 14px rgba(0,239,212,.11);
+    }
+    .p-step h3 { font-size: 1rem; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+    .p-step p { font-size: .88rem; color: var(--text); }
+
+    /* ══════════════════════════════════════════
+       FAQ
+    ══════════════════════════════════════════ */
+    .faq-list { max-width: 790px; display: flex; flex-direction: column; gap: 13px; }
+    .fi { border-radius: var(--r); overflow: hidden; }
+    .fq {
+      padding: 20px 24px; font-size: .98rem; font-weight: 700; color: var(--white);
+      cursor: pointer; display: flex; justify-content: space-between; align-items: center;
+      gap: 16px; user-select: none; transition: color .2s;
+    }
+    .fq:hover { color: var(--cyan); }
+    .farrow {
+      flex-shrink: 0; color: var(--cyan); width: 22px; height: 22px; border-radius: 50%;
+      border: 1px solid rgba(0,239,212,.28);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .82rem; transition: transform .3s, background .2s;
+    }
+    .fi.open .farrow { transform: rotate(180deg); background: rgba(0,239,212,.1); }
+    .fa {
+      max-height: 0; overflow: hidden;
+      transition: max-height .4s ease, padding .3s;
+      padding: 0 24px; color: var(--text); font-size: .93rem; line-height: 1.72;
+    }
+    .fi.open .fa { max-height: 300px; padding: 0 24px 22px; }
+
+    /* ══════════════════════════════════════════
+       CTA FINAL
+    ══════════════════════════════════════════ */
+    #cta { padding: 120px 30px; text-align: center; position: relative; }
+    #cta::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 50% 50% at 30% 40%, rgba(108,46,245,.08), transparent 70%),
+        radial-gradient(ellipse 50% 50% at 70% 60%, rgba(0,239,212,.06), transparent 70%);
+      pointer-events: none;
+    }
+    .cta-box {
+      max-width: 720px; margin: 0 auto;
+      padding: 64px 56px; border-radius: 28px; position: relative;
+    }
+    .cta-box::after {
+      content: ''; position: absolute; inset: -1px;
+      border-radius: 29px;
+      background: linear-gradient(135deg, var(--cyan), var(--violet), var(--pink));
+      z-index: -1; opacity: .3;
+    }
+    #cta h2 { margin-bottom: 18px; }
+    #cta p { color: var(--text); font-size: 1.05rem; max-width: 480px; margin: 0 auto 44px; line-height: 1.75; }
+
+    /* ══════════════════════════════════════════
+       FOOTER
+    ══════════════════════════════════════════ */
+    footer {
+      background: rgba(2,7,17,.97);
+      border-top: 1px solid rgba(0,239,212,.06);
+      padding: 34px 30px; text-align: center;
+      color: var(--text-dim); font-size: .86rem;
+    }
+    footer a { color: var(--text); text-decoration: none; }
+    footer a:hover { color: var(--cyan); }
+
+    /* ══════════════════════════════════════════
+       SCROLL REVEAL
+    ══════════════════════════════════════════ */
+    .fi-anim { opacity: 0; transform: translateY(28px); transition: opacity .65s ease, transform .65s ease; }
+    .fi-anim.vis { opacity: 1; transform: translateY(0); }
+    .stagger .fi-anim:nth-child(1){transition-delay:.00s}
+    .stagger .fi-anim:nth-child(2){transition-delay:.08s}
+    .stagger .fi-anim:nth-child(3){transition-delay:.16s}
+    .stagger .fi-anim:nth-child(4){transition-delay:.24s}
+    .stagger .fi-anim:nth-child(5){transition-delay:.32s}
+    .stagger .fi-anim:nth-child(6){transition-delay:.40s}
+
+    /* ══════════════════════════════════════════
+       RESPONSIVE
+    ══════════════════════════════════════════ */
+    @media (max-width: 820px) {
+      .nav-links { display: none; }
+      .hamburger { display: flex; }
+      .nav-links.open {
+        display: flex; flex-direction: column;
+        position: fixed; top: 66px; right: 0; left: 0;
+        background: rgba(2,8,20,.97);
+        backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px);
+        border-bottom: 1px solid rgba(0,239,212,.1);
+        padding: 28px 30px; gap: 20px; z-index: 299;
+      }
+      section { padding: 80px 22px; }
+      .whyme-layout { grid-template-columns: 1fr; gap: 32px; }
+      .stat { border-left: none; border-bottom: 1px solid rgba(0,239,212,.1); }
+      .stat:last-child { border-bottom: none; }
+      .hero-stats { flex-direction: column; }
+    }
+    @media (max-width: 540px) {
+      h1 { font-size: 2.1rem; letter-spacing: -.5px; }
+      .svc-grid, .fw-grid { grid-template-columns: 1fr; }
+      .cta-box { padding: 42px 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="c"></canvas>
+<div id="glow"></div>
+
+<!-- ═══════════════════ NAV ═══════════════════ -->
+<nav>
+  <a href="#hero" class="nav-logo">דויד <em>גלוזמן</em></a>
+  <ul class="nav-links" id="nl">
+    <li><a href="#forwhom"  onclick="cn()">למי זה מתאים</a></li>
+    <li><a href="#services" onclick="cn()">שירותים</a></li>
+    <li><a href="#whyme"    onclick="cn()">למה אני</a></li>
+    <li><a href="#process"  onclick="cn()">תהליך</a></li>
+    <li><a href="#faq"      onclick="cn()">שאלות</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:12px">
+    <a href="https://wa.me/972XXXXXXXXX" class="btn-nav" target="_blank">דברו איתי</a>
+    <div class="hamburger" id="hb" onclick="tn()">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════ HERO ═══════════════════ -->
+<section id="hero">
+  <div class="tron-floor"></div>
+  <div class="hero-inner">
+    <div class="badge"><div class="badge-dot"></div>שיווק דיגיטלי · קמפיינים · אוטומציות</div>
+
+    <h1>השיווק שלך <em>לא חייב</em><br>להרגיש מבולגן</h1>
+
+    <p class="hero-sub">
+      אני עוזר לבעלי עסקים לבנות מערכת שיווק ברורה —
+      מהמסר ועד הלקוח. בלי בלבול, בלי ניחושים, עם תוצאות אמיתיות.
+    </p>
+
+    <div class="hero-btns">
+      <a href="https://wa.me/972XXXXXXXXX" class="btn-primary" target="_blank">💬 בואו נעשה סדר בשיווק שלכם</a>
+      <a href="#services" class="btn-ghost">מה אני עושה ←</a>
+    </div>
+
+    <div class="hero-stats">
+      <div class="stat">
+        <div class="stat-n">8<span>+</span></div>
+        <div class="stat-l">שנות ניסיון</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n">100<span>+</span></div>
+        <div class="stat-l">עסקים שקיבלו ליווי</div>
+      </div>
+      <div class="stat">
+        <div class="stat-n">3</div>
+        <div class="stat-l">עולמות: תוכנה · שיווק · תוכן</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOR WHOM ═══════════════════ -->
+<section id="forwhom">
+  <div class="inner">
+    <div class="stag fi-anim">למי זה מתאים</div>
+    <h2 class="fi-anim">אם אחת מהמשפטות האלה<br>מוכרת לך — המקום שלך כאן</h2>
+    <p class="lead fi-anim">לא משנה מה הענף. אם השיווק שלך מרגיש כמו ניחוש, אפשר לעשות את זה אחרת.</p>
+    <div class="fw-grid stagger">
+      <div class="fw-card glass fi-anim"><span class="fw-icon">🏥</span><h3>בעלי קליניקות ומטפלים</h3><p>רוצים יותר פניות אורגניות, בלי להתעסק בשיווק כל יום</p></div>
+      <div class="fw-card glass fi-anim"><span class="fw-icon">🎯</span><h3>מאמנים ויועצים</h3><p>יודעים מה הם שווים, אבל לא יודעים איך להעביר את זה דיגיטלית</p></div>
+      <div class="fw-card glass fi-anim"><span class="fw-icon">🛠️</span><h3>בעלי מקצוע ונותני שירות</h3><p>רוצים לקוחות איכותיים ולא רק מתעניינים שלא ממירים</p></div>
+      <div class="fw-card glass fi-anim"><span class="fw-icon">🚀</span><h3>עסקים קטנים בצמיחה</h3><p>יש ביקוש, אבל אין מערכת שיווקית שתחזיק את הצמיחה</p></div>
+      <div class="fw-card glass fi-anim"><span class="fw-icon">💡</span><h3>עסקים עם פוטנציאל בלתי מנוצל</h3><p>המוצר טוב, השירות מצוין — אבל אף אחד לא יודע על זה</p></div>
+      <div class="fw-card glass fi-anim"><span class="fw-icon">📊</span><h3>מי שרוצה ביטחון שיווקי</h3><p>מישהו שיסביר מה עובד, מה לא, ולמה — לא רק "תעלה פוסטים"</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ SERVICES ═══════════════════ -->
+<section id="services">
+  <div class="inner">
+    <div class="stag fi-anim">שירותים</div>
+    <h2 class="fi-anim">מה אני עושה בפועל</h2>
+    <p class="lead fi-anim">לא "פתרונות שיווקיים". שירותים ספציפיים שיודעים לעשות דבר אחד: לייצר תוצאות.</p>
+    <div class="svc-grid stagger">
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">01 · תוכן &amp; קופי</span>
+        <span class="svc-ico">✍️</span>
+        <h3>יצירת תוכן שיווקי וכתיבת קופי</h3>
+        <p>תוכן שמדבר אל הלקוח הנכון, בשפה שלו. כתיבת עמודים, מודעות, פוסטים ומיילים שגורמים לאנשים לפעול.</p>
+      </div>
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">02 · פרסום ממומן</span>
+        <span class="svc-ico">📣</span>
+        <h3>ניהול קמפיינים במטא</h3>
+        <p>מהאסטרטגיה ועד הקריאייטיב ועד ניתוח הנתונים. קמפיינים שמביאים פניות אמיתיות ולא רק קליקים.</p>
+      </div>
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">03 · אוטומציה</span>
+        <span class="svc-ico">⚡</span>
+        <h3>אוטומציות שיווקיות</h3>
+        <p>מערכות שעובדות בשבילך: פולואפ אוטומטי, תזכורות, סגירת לידים — בלי שתצטרך לגעת בכלום.</p>
+      </div>
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">04 · בניית נוכחות</span>
+        <span class="svc-ico">🌐</span>
+        <h3>אתרי תדמית ועמודי נחיתה</h3>
+        <p>עמודים שממירים, שנטענים מהר, שנראים טוב בכל מכשיר — ושאומרים בדיוק מה שצריך להגיד.</p>
+      </div>
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">05 · ייעוץ וליווי</span>
+        <span class="svc-ico">🧠</span>
+        <h3>ייעוץ שיווקי + שיעורים פרטיים</h3>
+        <p>פגישת אסטרטגיה שמסדרת את הראש. ליווי שוטף לעסקים שרוצים ללמוד לעשות את זה בעצמם — נכון.</p>
+      </div>
+      <div class="svc-card glass fi-anim">
+        <span class="svc-num">06 · מודעות</span>
+        <span class="svc-ico">🎬</span>
+        <h3>יצירת מודעות שיווקיות</h3>
+        <p>וידאו, סטטיק, קרוסלות ומודעות טקסט שעובדים — מהקונספט ועד הביצוע הסופי.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ WHY ME ═══════════════════ -->
+<section id="whyme">
+  <div class="inner">
+    <div class="whyme-layout">
+      <div>
+        <div class="stag fi-anim">למה דויד גלוזמן</div>
+        <h2 class="fi-anim">מישהו שמבין את זה<br>מהקצה לקצה</h2>
+        <ul class="why-list">
+          <li class="why-item glass fi-anim">
+            <div class="check">✓</div>
+            <div><strong>שיווק + טכנולוגיה ביחד</strong><span>ניסיון בפיתוח תוכנה ובניית אתרים לצד שיווק ממומן — אני מדבר את שתי השפות.</span></div>
+          </li>
+          <li class="why-item glass fi-anim">
+            <div class="check">✓</div>
+            <div><strong>ביצוע, לא רק ייעוץ</strong><span>אני לא מסביר ומסתלק. אני בונה, מריץ, בודק, ומשפר — עד שזה עובד.</span></div>
+          </li>
+          <li class="why-item glass fi-anim">
+            <div class="check">✓</div>
+            <div><strong>מסר קודם לכל</strong><span>לפני שמריצים קמפיין — מוודאים שהמסר ברור, שהקהל מוגדר, שהעמוד ממיר.</span></div>
+          </li>
+          <li class="why-item glass fi-anim">
+            <div class="check">✓</div>
+            <div><strong>שקיפות מלאה</strong><span>תדעו תמיד מה קורה, למה, ומה הצעד הבא. לא ז'רגון, לא ערפל.</span></div>
+          </li>
+        </ul>
+      </div>
+      <div>
+        <div class="quote-panel glass fi-anim">
+          <p class="qt">"רוב הבעיות השיווקיות שאני פוגש לא נובעות מחוסר תקציב — הן נובעות מחוסר בהירות. ברגע שמסדרים את המסר, הקהל והמערכת — השיווק מתחיל לעבוד."</p>
+          <p class="qa">— דויד גלוזמן</p>
+          <div class="chips">
+            <span class="chip">Meta Ads</span>
+            <span class="chip">WordPress</span>
+            <span class="chip">Make / Zapier</span>
+            <span class="chip">Copywriting</span>
+            <span class="chip">Analytics</span>
+            <span class="chip">Automations</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ PROCESS ═══════════════════ -->
+<section id="process">
+  <div class="inner">
+    <div class="stag fi-anim">תהליך העבודה</div>
+    <h2 class="fi-anim">מהפגישה הראשונה ועד השיווק שעובד</h2>
+    <p class="lead fi-anim">תהליך פשוט, שקוף, ומוכוון תוצאה.</p>
+    <div class="process-wrap stagger">
+      <div class="p-step glass fi-anim"><div class="p-num">01</div><div><h3>שיחת היכרות</h3><p>מבינים את העסק, הקהל, היעדים — ומה בדיוק לא עובד היום</p></div></div>
+      <div class="p-step glass fi-anim"><div class="p-num">02</div><div><h3>אסטרטגיה ומסר</h3><p>מגדירים מסר ברור, קהל יעד, ומה יגרום ללקוח להגיד "זה בשבילי"</p></div></div>
+      <div class="p-step glass fi-anim"><div class="p-num">03</div><div><h3>בנייה ויצירה</h3><p>בונים: עמוד נחיתה, תוכן, קריאייטיב, אוטומציות — כל מה שצריך</p></div></div>
+      <div class="p-step glass fi-anim"><div class="p-num">04</div><div><h3>הרצה ואופטימיזציה</h3><p>מריצים, מודדים, ומשפרים על בסיס נתונים אמיתיים</p></div></div>
+      <div class="p-step glass fi-anim"><div class="p-num">05</div><div><h3>ליווי ותוצאות</h3><p>אני לא נעלם — נמשיך לבנות ולשפר ביחד לאורך זמן</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FAQ ═══════════════════ -->
+<section id="faq">
+  <div class="inner">
+    <div class="stag fi-anim">שאלות נפוצות</div>
+    <h2 class="fi-anim">שאלות שאנשים שואלים לפני שהם פונים</h2>
+    <div class="faq-list">
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>מה ההבדל בינך לבין סוכנות שיווק רגילה?</span><div class="farrow">▾</div></div>
+        <div class="fa">אני לא סוכנות. אתם מקבלים אדם אחד שמבין את כל התמונה — מהאסטרטגיה ועד הביצוע. אין "מנהל חשבון" שמעביר הודעות, אין טכנאי שלא יודע על השיווק. אני אחראי על הכל, ואתם יודעים בדיוק עם מי אתם מדברים.</div>
+      </div>
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>כמה זמן לוקח לראות תוצאות?</span><div class="farrow">▾</div></div>
+        <div class="fa">תלוי בשירות. קמפיין ממומן יכול להתחיל לייצר פניות תוך ימים ספורים. בניית תשתית שיווקית מלאה — חודש עד חודשיים. מה שאני לא עושה הוא להבטיח "תוצאות מטורפות תוך שבוע" — אני עובד ביסודיות, לא בקסמים.</div>
+      </div>
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>האם אני צריך להיות מעורב הרבה בתהליך?</span><div class="farrow">▾</div></div>
+        <div class="fa">בשלב הראשון — כן, אני צריך ממכם קצת זמן כדי להבין את העסק לעומק. אחרי שיש לי את המסר והכיוון, אני עובד עצמאי ברובו. עדכונים שוטפים — כן. פגישות אינסופיות — לא.</div>
+      </div>
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>מה המחיר?</span><div class="farrow">▾</div></div>
+        <div class="fa">אין מחיר קבוע אחד — כי כל עסק שונה. לאחר שיחת היכרות קצרה אני יכול לתת הצעת מחיר מדויקת ומותאמת. בואו נדבר, אין שום התחייבות.</div>
+      </div>
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>האם אתה עובד עם עסקים בתחומים ספציפיים?</span><div class="farrow">▾</div></div>
+        <div class="fa">עבדתי עם מגוון רחב: קליניקות, מאמנים, יועצים פיננסיים, מעצבי פנים, בעלי מסעדות ועוד. אם אתם נותנים שירות ורוצים יותר פניות — אני יכול לעזור.</div>
+      </div>
+      <div class="fi glass fi-anim">
+        <div class="fq" onclick="tf(this)"><span>אפשר גם רק ייעוץ חד־פעמי?</span><div class="farrow">▾</div></div>
+        <div class="fa">כן, בהחלט. פגישת אסטרטגיה חד־פעמית יכולה לתת לכם בהירות מלאה על מה לעשות ובאיזה סדר — גם אם אחר כך תרצו לבצע בעצמכם.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ CTA FINAL ═══════════════════ -->
+<section id="cta">
+  <div class="inner">
+    <div class="cta-box glass">
+      <div class="stag" style="justify-content:center;margin-bottom:16px">מוכנים להתחיל?</div>
+      <h2>שיחה אחת יכולה לשנות<br>את הכיוון של השיווק שלכם</h2>
+      <p>לא צריך להיות מוכן עם כלום. רק לבוא עם הרצון להבין מה אפשר לשפר. שיחת ההיכרות קצרה, ממוקדת, ובלי שום התחייבות.</p>
+      <div style="display:flex;gap:14px;justify-content:center;flex-wrap:wrap">
+        <a href="https://wa.me/972XXXXXXXXX" class="btn-primary" target="_blank">💬 דברו איתי בוואטסאפ</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════ FOOTER ═══════════════════ -->
+<footer>
+  <p>© 2025 דויד גלוזמן · שיווק דיגיטלי &nbsp;|&nbsp; <a href="mailto:david@example.com">david@example.com</a></p>
+</footer>
+
+<!-- ══════════════════════════════════════════════
+     THREE.JS  CDN
+══════════════════════════════════════════════ -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function () {
+  /* ── RENDERER SETUP ── */
+  const canvas = document.getElementById('c');
+  const W = window.innerWidth, H = window.innerHeight;
+  const scene    = new THREE.Scene();
+  const camera   = new THREE.PerspectiveCamera(60, W / H, 0.1, 100);
+  camera.position.set(0, 0, 9);
+  const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+
+  /* ── LIGHTS ── */
+  scene.add(new THREE.AmbientLight(0xffffff, 0.25));
+  const cL = new THREE.PointLight(0x00efd4, 3.5, 22); cL.position.set(6, 4, 4);  scene.add(cL);
+  const vL = new THREE.PointLight(0x6c2ef5, 2.5, 18); vL.position.set(-5,-3, 3); scene.add(vL);
+  const pL = new THREE.PointLight(0xff2d6d, 1.5, 14); pL.position.set(1, -6, 5); scene.add(pL);
+
+  /* ── SHAPE FACTORY: solid (flat-shaded) + wireframe overlay ── */
+  function makeShape(geo, solidCol, wireCol, solidOp, wireOp) {
+    const grp = new THREE.Group();
+    grp.add(new THREE.Mesh(geo, new THREE.MeshPhongMaterial({
+      color: solidCol, transparent: true, opacity: solidOp,
+      shininess: 110, flatShading: true,
+      polygonOffset: true, polygonOffsetFactor: 1, polygonOffsetUnits: 1
+    })));
+    const wm = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({
+      color: wireCol, wireframe: true, transparent: true, opacity: wireOp
+    }));
+    wm.scale.setScalar(1.004);
+    grp.add(wm);
+    return grp;
+  }
+
+  /* ── SHAPES ── */
+  // 1. Large cyan icosahedron — hero, right
+  const s1 = makeShape(new THREE.IcosahedronGeometry(2.3, 0), 0x00efd4, 0x00efd4, 0.07, 0.50);
+  s1.position.set(5.8, 0.3, -1.5); scene.add(s1);
+
+  // 2. Violet octahedron — left
+  const s2 = makeShape(new THREE.OctahedronGeometry(1.7, 0), 0x6c2ef5, 0x8a55ff, 0.07, 0.45);
+  s2.position.set(-5.8, 1.8, -2.5); scene.add(s2);
+
+  // 3. Pink tetrahedron — lower right
+  const s3 = makeShape(new THREE.TetrahedronGeometry(1.15, 0), 0xff2d6d, 0xff5090, 0.07, 0.42);
+  s3.position.set(3.5, -4.8, 0.2); scene.add(s3);
+
+  // 4. Small cyan icosahedron — upper left
+  const s4 = makeShape(new THREE.IcosahedronGeometry(0.9, 0), 0x00ccff, 0x00ccff, 0.08, 0.50);
+  s4.position.set(-4.2, 4.2, -1.2); scene.add(s4);
+
+  // 5. Small cyan octahedron — lower left
+  const s5 = makeShape(new THREE.OctahedronGeometry(1.05, 0), 0x00efd4, 0x00efd4, 0.06, 0.38);
+  s5.position.set(-5.0, -4.0, -2.5); scene.add(s5);
+
+  // 6. Ghost icosahedron — deep background, violet, very faint
+  const g6 = new THREE.Mesh(
+    new THREE.IcosahedronGeometry(5, 0),
+    new THREE.MeshBasicMaterial({ color: 0x6c2ef5, wireframe: true, transparent: true, opacity: 0.05 })
+  );
+  g6.position.set(0, 0, -10); scene.add(g6);
+
+  // 7. Ghost octahedron — right, far back
+  const g7 = new THREE.Mesh(
+    new THREE.OctahedronGeometry(3, 0),
+    new THREE.MeshBasicMaterial({ color: 0x00efd4, wireframe: true, transparent: true, opacity: 0.04 })
+  );
+  g7.position.set(8, -2, -8); scene.add(g7);
+
+  /* ── PARTICLE FIELD ── */
+  const N   = window.innerWidth < 600 ? 80 : 140;
+  const pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    pos[i * 3]     = (Math.random() - .5) * 26;
+    pos[i * 3 + 1] = (Math.random() - .5) * 18;
+    pos[i * 3 + 2] = (Math.random() - .5) * 10 - 2;
+  }
+  const pg = new THREE.BufferGeometry();
+  pg.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+  const pts = new THREE.Points(pg, new THREE.PointsMaterial({
+    color: 0x00efd4, size: .04, transparent: true, opacity: .45
+  }));
+  scene.add(pts);
+
+  /* ── MOUSE PARALLAX ── */
+  let mx = 0, my = 0, tx = 0, ty = 0;
+  document.addEventListener('mousemove', e => {
+    mx = (e.clientX / window.innerWidth  - .5);
+    my = -(e.clientY / window.innerHeight - .5);
+    const g = document.getElementById('glow');
+    if (g) { g.style.left = e.clientX + 'px'; g.style.top = e.clientY + 'px'; }
+  });
+
+  /* ── SCROLL ── */
+  let scrollY = 0;
+  window.addEventListener('scroll', () => { scrollY = window.scrollY; });
+
+  /* ── ANIMATION LOOP ── */
+  function animate(t) {
+    requestAnimationFrame(animate);
+    const T = t * .001;
+
+    s1.rotation.x = T * .24;  s1.rotation.y = T * .17;
+    s1.position.y = .3  + Math.sin(T * .58) * .42;
+
+    s2.rotation.x = -T * .19; s2.rotation.z = T * .13;
+    s2.position.y = 1.8 + Math.cos(T * .48) * .38;
+
+    s3.rotation.y = T * .36;  s3.rotation.x = T * .24;
+    s3.position.y = -4.8 + Math.sin(T * .78) * .28;
+
+    s4.rotation.x = T * .42;  s4.rotation.z = -T * .28;
+    s4.position.y = 4.2 + Math.cos(T * .66) * .28;
+
+    s5.rotation.y = -T * .21; s5.rotation.x = T * .16;
+    s5.position.y = -4.0 + Math.sin(T * .52) * .32;
+
+    g6.rotation.y = T * .025; g6.rotation.x = T * .015;
+    g7.rotation.z = T * .018; g7.rotation.y = T * .022;
+
+    pts.rotation.y = T * .006;
+
+    // Smooth camera parallax
+    tx += (mx * .75 - tx) * .04;
+    ty += (my * .50 - ty) * .04;
+    camera.position.x = tx;
+    camera.position.y = ty;
+    camera.position.z = 9 - scrollY * .001;
+    camera.lookAt(0, ty * .2, 0);
+
+    renderer.render(scene, camera);
+  }
+  animate(0);
+
+  /* ── RESIZE ── */
+  window.addEventListener('resize', () => {
+    const W2 = window.innerWidth, H2 = window.innerHeight;
+    camera.aspect = W2 / H2;
+    camera.updateProjectionMatrix();
+    renderer.setSize(W2, H2);
+  });
+})();
+
+/* ══════════════════════════════════════════
+   FAQ ACCORDION
+══════════════════════════════════════════ */
+function tf(el) {
+  const item = el.closest('.fi');
+  const wasOpen = item.classList.contains('open');
+  document.querySelectorAll('.fi.open').forEach(i => i.classList.remove('open'));
+  if (!wasOpen) item.classList.add('open');
+}
+
+/* ══════════════════════════════════════════
+   HAMBURGER NAV
+══════════════════════════════════════════ */
+function tn() { document.getElementById('nl').classList.toggle('open'); }
+function cn() { document.getElementById('nl').classList.remove('open'); }
+
+/* ══════════════════════════════════════════
+   SCROLL REVEAL  (Intersection Observer)
+══════════════════════════════════════════ */
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, { threshold: .1 });
+document.querySelectorAll('.fi-anim').forEach(el => obs.observe(el));
+</script>
+</body>
 </html>
